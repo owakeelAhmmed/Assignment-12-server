@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 require('dotenv').config();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
 const port = process.env.PORT || 5000;
 
@@ -17,7 +17,23 @@ app.use(express.json());
 
       try{
         await client.connect();
-        console.log("connected to database")
+        const productCollection = client.db('supergear_data').collection('product');
+
+        app.get('/product', async (req, res) =>{
+          const query ={};
+          const cursor = productCollection.find(query);
+          const product = await cursor.toArray();
+          res.send(product);
+        })
+
+        app.get('/product/:id', async(req, res) => {
+          const id = req.params.id;
+          const query = {_id: ObjectId(id)};
+          const product = await productCollection.findOne(query);
+          res.send(product);
+        })
+
+
       }
       finally{
 
