@@ -19,6 +19,7 @@ app.use(express.json());
         await client.connect();
         const productCollection = client.db('supergear_data').collection('product');
         const bookingCollection = client.db('supergear_data').collection('booking');
+        const userCollection = client.db('supergear_data').collection('users');
 
         app.get('/product', async (req, res) =>{
           const query ={};
@@ -26,6 +27,19 @@ app.use(express.json());
           const product = await cursor.toArray();
           res.send(product);
         })
+
+        app.put('/user/:email', async(req, res)=>{
+          const email = req.params.email;
+          const user = req.body;
+          const filter = {email: email};
+          const options = {upsert: true};
+          const updateDoc ={
+            $set: user,
+          };
+          const result = await userCollection.updateOne(filter,updateDoc, options);
+          res.send(result);
+           })
+
 
         app.get('/product/:id', async(req, res) => {
           const id = req.params.id;
