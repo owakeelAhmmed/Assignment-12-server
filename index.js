@@ -18,6 +18,7 @@ app.use(express.json());
       try{
         await client.connect();
         const productCollection = client.db('supergear_data').collection('product');
+        const bookingCollection = client.db('supergear_data').collection('booking');
 
         app.get('/product', async (req, res) =>{
           const query ={};
@@ -31,6 +32,21 @@ app.use(express.json());
           const query = {_id: ObjectId(id)};
           const product = await productCollection.findOne(query);
           res.send(product);
+        })
+
+        app.get('/booking', async(req, res) =>{
+          const email = req.query.email;
+          const query = {email: email }
+          const result = await bookingCollection.find(query).toArray();
+            res.send(result);
+        })
+
+
+
+        app.post('/booking', async(req, res) =>{
+          const booking = req.body;
+          const result = await bookingCollection.insertOne(booking);
+          res.send(result);
         })
 
 
