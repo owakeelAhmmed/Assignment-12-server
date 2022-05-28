@@ -78,7 +78,7 @@ app.use(express.json());
           res.send(users);
         })
 
-
+        // product id api 
         app.get('/product/:id', async(req, res) => {
           const id = req.params.id;
           const query = {_id: ObjectId(id)};
