@@ -14,6 +14,7 @@ app.use(express.json());
 
     const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
+
     function verifyJWT(req, res, next){
       const authHeader = req.headers.authorization;
       if(!authHeader){
@@ -44,6 +45,7 @@ app.use(express.json());
           res.send(product);
         })
 
+        // admin api
         app.put('/user/admin/:email', async(req, res)=>{
           const email = req.params.email;
           const filter = {email: email};
@@ -53,6 +55,9 @@ app.use(express.json());
           const result = await userCollection.updateOne(filter,updateDoc);
           res.send(result);
            })
+
+
+
 
         app.put('/user/:email', async(req, res)=>{
           const email = req.params.email;
