@@ -87,7 +87,7 @@ app.use(express.json());
         })
 
         
-
+        // bookin api 
         app.get('/booking', verifyJWT, async(req, res) =>{
           const email = req.query.email;
           console.log(email)
