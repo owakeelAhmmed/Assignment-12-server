@@ -4,6 +4,10 @@ require('dotenv').config();
 const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
+const { default: Stripe } = require('stripe');
+const stripe = require('stripe')(process.env.STEIPE_SECRET_KEY);
+
+
 const port = process.env.PORT || 5000;
 
 app.use(cors());
@@ -45,16 +49,46 @@ app.use(express.json());
           res.send(product);
         })
 
-        // admin api
-        app.put('/user/admin/:email', async(req, res)=>{
+        app.get('/admin/:email', async(req, res)=> {
           const email = req.params.email;
-          const filter = {email: email};
-          const updateDoc ={
-            $set: {role:'admin'},
-          };
-          const result = await userCollection.updateOne(filter,updateDoc);
-          res.send(result);
+          const user = await userCollection.findOne({email: email});
+          const isAdmin = user.role === 'admin';
+          res.send({admin: isAdmin})
+        })
+
+        // admin api
+        app.put('/user/admin/:email', verifyJWT, async(req, res)=>{
+          const email = req.params.email;
+          const requester = req.decoded.email;
+          const requesterAccount = await userCollection.findOne({email: requester});
+          if(requesterAccount.role === 'admin'){
+            const filter = {email: email};
+              const updateDoc ={
+                $set: {role:'admin'},
+              };
+              const result = await userCollection.updateOne(filter,updateDoc);
+              res.send(result);
+          }
+          else{
+            res.status(403).send({message: 'forbidden'});
+          }
+
            })
+
+
+           //payment api
+           app.post('/create-payment-intent',verifyJWT, async(req, res) => {
+             const service = req.body;
+             const price = service.price;
+             const amount = price*100;
+             const paymentIntent = await stripe.paymentIntents.create({
+               amount: amount,
+               currency: 'usd',
+               payment_method_types:['card']
+             });
+             res.send({clientSecret: paymentIntent.client_secret})
+           });
+
 
 
 
@@ -78,7 +112,7 @@ app.use(express.json());
           res.send(users);
         })
 
-        // product id api 
+        // product id api
         app.get('/product/:id', async(req, res) => {
           const id = req.params.id;
           const query = {_id: ObjectId(id)};
@@ -86,8 +120,8 @@ app.use(express.json());
           res.send(product);
         })
 
-        
-        // bookin api 
+
+        // bookin api
         app.get('/booking', verifyJWT, async(req, res) =>{
           const email = req.query.email;
           console.log(email)
@@ -100,8 +134,17 @@ app.use(express.json());
           else{
             return res.status(403).send({message: 'forbidden access'})
           }
-          
+
         })
+
+        app.get('/booking/:id', verifyJWT, async(req, res) =>{
+          const id = req.params.id;
+          const query = {_id: ObjectId(id)};
+          const booking = await bookingCollection.findOne(query);
+          res.send(booking);
+        })
+
+
 
 
 
