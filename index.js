@@ -10,7 +10,7 @@ const stripe = require('stripe')(process.env.STEIPE_SECRET_KEY);
 
 const port = process.env.PORT || 5000;
 
-app.use(cors({origin: 'https://super-gear.web.app'})
+app.use(cors({origin: 'https://super-gear.web.app'}));
 app.use(express.json());
  
 
