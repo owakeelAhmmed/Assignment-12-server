@@ -1,11 +1,12 @@
+require('dotenv').config();
 const express = require('express');
 const app = express();
-require('dotenv').config();
+
 const jwt = require('jsonwebtoken');
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const cors = require('cors');
 const { default: Stripe } = require('stripe');
-const stripe = require('stripe')(process.env.STEIPE_SECRET_KEY);
+const stripe = require('stripe')('sk_test_51L4rrIIirdAPi8uOUMfpkCCmTg681FdpEnsylcbAzXdCw4sjB9qBGIHWu3CajxRn7IoX3FjttBo0ilXljINfBqN200MkeGWgrR');
 
 
 const port = process.env.PORT || 5000;
