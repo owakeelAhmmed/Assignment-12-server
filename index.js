@@ -12,7 +12,11 @@ const port = process.env.PORT || 5000;
 
 app.use(cors());
 app.use(express.json());
+ 
 
+      
+
+      
 
     const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.urclyui.mongodb.net/?retryWrites=true&w=majority`;
 
@@ -41,6 +45,11 @@ app.use(express.json());
         const productCollection = client.db('supergear_data').collection('product');
         const bookingCollection = client.db('supergear_data').collection('booking');
         const userCollection = client.db('supergear_data').collection('users');
+        const paymentCollection = client.db('supergear_data').collection('payments');
+        const addproductCollection = client.db('supergear_data').collection('addproducts');
+        const reviewCollection = client.db('supergear_data').collection('reviews');
+
+
 
         app.get('/product', async (req, res) =>{
           const query ={};
@@ -61,6 +70,7 @@ app.use(express.json());
           const email = req.params.email;
           const requester = req.decoded.email;
           const requesterAccount = await userCollection.findOne({email: requester});
+          
           if(requesterAccount.role === 'admin'){
             const filter = {email: email};
               const updateDoc ={
@@ -88,9 +98,6 @@ app.use(express.json());
              });
              res.send({clientSecret: paymentIntent.client_secret})
            });
-
-
-
 
 
           //  create user email
@@ -121,7 +128,7 @@ app.use(express.json());
         })
 
 
-        // bookin api
+        // booking api
         app.get('/booking', verifyJWT, async(req, res) =>{
           const email = req.query.email;
           console.log(email)
@@ -144,6 +151,58 @@ app.use(express.json());
           res.send(booking);
         })
 
+
+        // Booking update 
+
+        app.patch('/booking/:id', verifyJWT, async(req, res) => {
+          const id = req.params.id;
+          const payment = req.body;
+          const filter = {_id: ObjectId(id)};
+          const updateDoc = {
+            $set: {
+              paid: true,
+              transationId: payment.transationId
+            }
+          }
+          const result = await paymentCollection.insertOne(payment);
+          const updateBooking = await bookingCollection.updateOne(filter, updateDoc);
+          res.send(updateDoc);
+        })
+
+        // add product api
+        app.post('/addproduct', async(req, res) =>{
+          const product = req.body;
+          const result = await addproductCollection.insertOne(product);
+          res.send(result);
+        })
+
+        app.get('/addproduct', async(req, res) =>{
+          const result = await addproductCollection.find().toArray();
+          res.send(result);
+        })
+
+        app.delete('/addproduct/:id', async(req, res) =>{
+          const id = req.params.id;
+          const query = {_id: ObjectId(id) };
+          const result = await addproductCollection.deleteOne(query);
+          res.send(result);
+        })
+        // add product api end
+
+
+
+        // Reviews api
+        app.post('/reviews', async(req, res) =>{
+          const review = req.body;
+          const result = await reviewCollection.insertOne(review);
+          res.send(result);
+        })
+
+
+         app.get('/reviews', async(req, res) =>{
+          const result = await reviewCollection.find().toArray();
+          res.send(result);
+        })
 
 
 
